@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Gemini AI Chatbot Hub</title>
+  <meta name="description" content="Production-ready WhatsApp Cloud API and Google Gemini 2.5 Flash AI Chatbot management console with live ngrok tunneling.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Main Application Wrapper -->
+  <div class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-badge">
+          <div class="logo-icon-wrapper">
+            <svg class="wa-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.63C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.9C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.5C9.36 7.5 9.09 7.57 8.85 7.83C8.62 8.08 7.96 8.7 7.96 9.96C7.96 11.23 8.88 12.45 9.01 12.63C9.14 12.8 10.79 15.35 13.31 16.44C13.91 16.7 14.38 16.85 14.74 16.97C15.34 17.16 15.89 17.13 16.32 17.07C16.81 17 17.81 16.46 18.02 15.88C18.22 15.29 18.22 14.79 18.16 14.68C18.09 14.58 17.93 14.52 17.68 14.4C17.44 14.27 16.22 13.68 15.99 13.6C15.77 13.51 15.6 13.47 15.44 13.72C15.28 13.96 14.81 14.52 14.67 14.68C14.52 14.85 14.38 14.87 14.13 14.74C13.88 14.62 12.84 14.28 11.61 13.18C10.65 12.33 10.01 11.27 9.88 11.06C9.76 10.84 9.87 10.72 9.99 10.6C10.1 10.49 10.24 10.31 10.36 10.17C10.49 10.03 10.53 9.92 10.61 9.76C10.69 9.59 10.65 9.45 10.59 9.32C10.53 9.2 10.05 8.04 9.86 7.55C9.66 7.08 9.47 7.14 9.33 7.13C9.2 7.13 9.04 7.13 8.87 7.13L9.53 7.5Z"/>
+            </svg>
+            <span class="sparkle-chip">✦ AI</span>
+          </div>
+          <div class="brand-text">
+            <h1>WhatsApp Gemini Bot</h1>
+            <span class="sub-title">Cloud API &bull; Gemini 2.5 Flash &bull; ngrok</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <!-- Live status chips -->
+        <div class="status-pill" id="meta-status-pill">
+          <span class="indicator-dot online"></span>
+          <span class="pill-label">WhatsApp Cloud API:</span>
+          <span class="pill-val" id="meta-status-text">Connected</span>
+        </div>
+        <div class="status-pill" id="gemini-status-pill">
+          <span class="indicator-dot purple-pulse"></span>
+          <span class="pill-label">LLM:</span>
+          <span class="pill-val" id="gemini-status-text">Gemini 2.5 Flash</span>
+        </div>
+        <div class="status-pill" id="ram-status-pill" title="Render 512MB RAM OOM Protection">
+          <span class="indicator-dot online"></span>
+          <span class="pill-label">RAM:</span>
+          <span class="pill-val" id="ram-status-text">50 MB / 512 MB (Safe)</span>
+        </div>
+        <div class="status-pill" id="tunnel-status-pill">
+          <span class="indicator-dot green-pulse"></span>
+          <span class="pill-label">Host:</span>
+          <span class="pill-val" id="tunnel-status-text">Local / Render</span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <button class="btn btn-secondary" id="btn-show-instructions" title="View Meta Webhook Setup Instructions">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span>Webhook Setup Guide</span>
+        </button>
+        <button class="btn btn-emerald" id="btn-quick-template" title="Send Jaspers Market Template to 919884048181">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          <span>Send Template Message</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Webhook Setup Banner (Highlighted) -->
+    <section class="webhook-banner" id="webhook-banner">
+      <div class="banner-inner">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+          </svg>
+        </div>
+        <div class="banner-content">
+          <div class="banner-title">
+            <strong>Meta WhatsApp Webhook Configuration</strong>
+            <span class="badge-live">LIVE TUNNEL READY</span>
+          </div>
+          <div class="banner-credentials-row">
+            <div class="cred-box">
+              <label>Callback URL (Paste into Meta Dashboard):</label>
+              <div class="copy-input-group">
+                <input type="text" id="input-webhook-url" readonly value="Loading tunnel URL...">
+                <button class="btn-copy" id="btn-copy-url" title="Copy Callback URL">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="cred-box">
+              <label>Verify Token:</label>
+              <div class="copy-input-group">
+                <input type="text" id="input-verify-token" readonly value="whatsapp_bot_verify_token_2026">
+                <button class="btn-copy" id="btn-copy-token" title="Copy Verify Token">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="cred-box mini-stats">
+              <label>WhatsApp Phone ID:</label>
+              <span class="code-tag" id="tag-phone-id">1364217103433071</span>
+            </div>
+            <div class="cred-box mini-stats">
+              <label>Test Recipient:</label>
+              <span class="code-tag highlight" id="tag-recipient">+91 9884048181</span>
+            </div>
+          </div>
+        </div>
+        <div class="banner-actions">
+          <button class="btn-icon" id="btn-toggle-instructions" title="Expand / Collapse Meta Setup Steps">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Expandable Meta Instructions Drawer -->
+      <div class="setup-steps-drawer hidden" id="setup-steps-drawer">
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>Open Meta Developer Portal</h4>
+              <p>Go to <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">Meta Developers Dashboard</a> &rarr; Select your WhatsApp App &rarr; <strong>WhatsApp</strong> &rarr; <strong>Configuration</strong>.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>Edit Webhook URL & Token</h4>
+              <p>Under <strong>Webhook</strong>, click <strong>Edit</strong>. Paste the <code>Callback URL</code> and <code>Verify Token</code> above, then click <strong>Verify and Save</strong>.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>Subscribe to "messages"</h4>
+              <p>Click <strong>Manage Webhook Fields</strong> and toggle <strong>Subscribe</strong> on the <strong>messages</strong> row. That's it!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workspace Area -->
+    <main class="main-workspace">
+      
+      <!-- Left Panel: Chat List & Sessions -->
+      <aside class="sidebar-chats">
+        <div class="sidebar-header">
+          <h3>Conversations</h3>
+          <button class="btn-icon-small" id="btn-clear-chats" title="Clear Chat History">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
+
+        <div class="contacts-list" id="contacts-list">
+          <!-- Active Contact Item -->
+          <div class="contact-item active" data-sender="919884048181">
+            <div class="avatar">
+              <span class="avatar-text">91</span>
+              <span class="wa-badge-mini">✓</span>
+            </div>
+            <div class="contact-info">
+              <div class="contact-top">
+                <span class="contact-name">+91 9884048181</span>
+                <span class="contact-time" id="contact-time">Now</span>
+              </div>
+              <div class="contact-bottom">
+                <span class="last-msg-preview" id="last-msg-preview">Primary Test Number (Ready)</span>
+                <span class="status-indicator-tag">ACTIVE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-quick-tools">
+          <div class="quick-tools-title">TESTING MODES</div>
+          <div class="mode-selector">
+            <label class="radio-label">
+              <input type="radio" name="chatMode" value="whatsapp" checked id="mode-wa">
+              <span class="radio-custom"></span>
+              <span class="mode-text">
+                <strong>WhatsApp Cloud API</strong>
+                <small>Sends live via Meta to recipient</small>
+              </span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="chatMode" value="simulate" id="mode-sim">
+              <span class="radio-custom"></span>
+              <span class="mode-text">
+                <strong>Simulate Inbound</strong>
+                <small>Test Gemini AI prompt directly</small>
+              </span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Panel: WhatsApp Chat Window -->
+      <section class="chat-viewport">
+        
+        <!-- Chat Header -->
+        <div class="chat-viewport-header">
+          <div class="chat-target">
+            <div class="chat-avatar">
+              <span class="avatar-initials" id="active-chat-initials">91</span>
+              <span class="online-indicator"></span>
+            </div>
+            <div class="chat-meta">
+              <div class="chat-title" id="active-chat-title">+91 9884048181</div>
+              <div class="chat-status" id="active-chat-status">WhatsApp Cloud API &bull; Gemini 2.5 Flash Memory Active</div>
+            </div>
+          </div>
+
+          <div class="chat-header-actions">
+            <button class="btn btn-sm btn-outline" id="btn-quick-hello" title="Send template order confirmation">
+              <span>Send Order Confirmation</span>
+            </button>
+            <button class="btn btn-sm btn-outline" id="btn-refresh-status" title="Refresh API Status">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages Area (Authentic WhatsApp Dark Theme) -->
+        <div class="chat-messages-container" id="chat-messages-container">
+          <div class="system-chat-date-divider">
+            <span>TODAY</span>
+          </div>
+
+          <div class="system-security-banner">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            <span>Connected to WhatsApp Cloud API (Phone ID: 1364217103433071). AI responses generated by Gemini 2.5 Flash.</span>
+          </div>
+
+          <!-- Initial template message card -->
+          <div class="message-row outbound template">
+            <div class="bubble bubble-outbound">
+              <div class="bubble-tag">Template: jaspers_market_order_confirmation_v1</div>
+              <div class="bubble-text">
+                <p>Hello <strong>John Doe</strong>,</p>
+                <p>Thank you for your order! Your confirmation code is <strong>123456</strong>.</p>
+                <p>Date: Sep 9, 2026</p>
+              </div>
+              <div class="bubble-meta">
+                <span class="time">Accepted by Meta</span>
+                <span class="ticks blue">✓✓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Messages dynamically appended here -->
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="typing-indicator hidden" id="typing-indicator">
+          <div class="typing-avatar">🤖</div>
+          <div class="typing-bubble">
+            <span class="typing-text">Gemini is thinking</span>
+            <div class="typing-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input Bar -->
+        <div class="chat-input-bar">
+          <div class="mode-badge-indicator" id="current-mode-badge" title="Current sending mode">
+            <span class="dot"></span>
+            <span class="badge-text" id="badge-mode-text">LIVE WHATSAPP</span>
+          </div>
+
+          <form class="input-form" id="chat-form">
+            <input type="text" id="chat-input" placeholder="Type a message to test Gemini AI response..." autocomplete="off" required>
+            
+            <button type="submit" class="btn-send" id="btn-send" title="Send Message (Enter)">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Right Panel: Management Tabs -->
+      <aside class="sidebar-inspector">
+        <div class="inspector-tabs">
+          <button class="tab-btn active" data-tab="tab-bot">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"/></svg>
+            <span>Bot AI</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-template">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <span>Template</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-logs">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            <span>Webhook Logs</span>
+          </button>
+        </div>
+
+        <div class="tab-content-wrapper">
+          
+          <!-- TAB 1: Bot Intelligence & Persona -->
+          <div class="tab-pane active" id="tab-bot">
+            <div class="pane-header">
+              <h4>Gemini Bot Configuration</h4>
+              <p>Configure model personality and behavior in real-time.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="select-model">Model Engine:</label>
+              <select id="select-model" class="custom-select">
+                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Ultra-fast & Smart)</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bot-system-prompt">System Instruction / Persona:</label>
+              <textarea id="bot-system-prompt" rows="8" class="custom-textarea" placeholder="Enter system instructions for the WhatsApp AI assistant..."></textarea>
+            </div>
+
+            <div class="btn-group-row">
+              <button class="btn btn-emerald w-full" id="btn-save-settings">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                <span>Save Persona Instructions</span>
+              </button>
+            </div>
+
+            <hr class="divider">
+
+            <div class="quick-info-card">
+              <h5>Multi-turn Conversation Memory</h5>
+              <p>The bot automatically maintains conversational context for each WhatsApp number. Context is retained across exchanges.</p>
+              <button class="btn btn-sm btn-outline-danger w-full" id="btn-reset-memory">
+                Clear Context Memory
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: Send Template Message -->
+          <div class="tab-pane" id="tab-template">
+            <div class="pane-header">
+              <h4>Send WhatsApp Template</h4>
+              <p>Templates initiate conversations even before a user messages first.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="tpl-recipient">Recipient Phone Number:</label>
+              <input type="text" id="tpl-recipient" class="custom-input" value="919884048181" placeholder="e.g. 919884048181">
+            </div>
+
+            <div class="form-group">
+              <label for="tpl-name">Template Name:</label>
+              <input type="text" id="tpl-name" class="custom-input" value="jaspers_market_order_confirmation_v1">
+            </div>
+
+            <div class="form-group">
+              <label for="tpl-customer-name">Customer Name Parameter:</label>
+              <input type="text" id="tpl-customer-name" class="custom-input" value="John Doe">
+            </div>
+
+            <div class="form-group">
+              <label for="tpl-order-id">Order ID Parameter:</label>
+              <input type="text" id="tpl-order-id" class="custom-input" value="ORD-789012">
+            </div>
+
+            <button class="btn btn-emerald w-full" id="btn-submit-template">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+              <span>Dispatch Template via Meta</span>
+            </button>
+
+            <div class="callout-tip">
+              <strong>Note on 24h Window:</strong> Once the recipient replies to your template message, you can chat back-and-forth freely using direct AI messages without requiring any templates!
+            </div>
+          </div>
+
+          <!-- TAB 3: Webhook Event Logs -->
+          <div class="tab-pane" id="tab-logs">
+            <div class="pane-header flex-between">
+              <div>
+                <h4>Live Webhook Stream</h4>
+                <p>Incoming Meta POSTs and event payloads</p>
+              </div>
+              <button class="btn-icon-small" id="btn-clear-logs" title="Clear log stream">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+
+            <div class="log-stream-container" id="log-stream">
+              <div class="log-item info">
+                <span class="log-time">Now</span>
+                <span class="log-msg">Listening for Meta Webhook events...</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- Floating Toast Notification -->
+    <div class="toast-notification hidden" id="toast">
+      <span class="toast-icon">✓</span>
+      <span class="toast-message" id="toast-message">Copied to clipboard!</span>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: whatsapp-automation
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: node --max-old-space-size=380 server.js
+    envVars:
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=380
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GRAPH_API_VERSION
+        value: v21.0
+      - key: WEBHOOK_VERIFY_TOKEN
+        value: whatsapp_bot_verify_token_2026
+      - key: DEFAULT_RECIPIENT
+        value: "919884048181"
+      - key: BOT_NAME
+        value: "Aura WhatsApp Assistant"
+      - key: BOT_SYSTEM_PROMPT
+        value: "You are Aura, an intelligent, helpful, and friendly WhatsApp AI Assistant. Keep answers concise, engaging, and well-structured with WhatsApp formatting (*bold*, _italics_, bullet points, emojis)."
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        value: "1364217103433071"
+      - key: WHATSAPP_BUSINESS_ACCOUNT_ID
+        value: "1088619957238339"
+      - key: GEMINI_API_KEY
+        sync: false

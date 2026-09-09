@@ -1,0 +1,23 @@
+{
+  "name": "whatsapp-automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test-send.js",
+  "scripts": {
+    "start": "node --max-old-space-size=380 server.js",
+    "start:tunnel": "node start.js",
+    "dev": "node start.js",
+    "send-template": "node test-send.js",
+    "test-webhook": "node test-webhook.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@ngrok/ngrok": "^1.7.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
