@@ -19,6 +19,11 @@ const chatMessages = []; // Complete message log
 const contacts = new Map(); // sender -> { name, lastActive, lastMessage }
 const sseClients = new Set(); // Active SSE connections
 
+// 🛡️ Anti-Ban Data Structures
+const optedOutUsers = new Set(); // Stores phone numbers that opted out via STOP/UNSUBSCRIBE
+const inFlightSenders = new Set(); // Prevents concurrency retry loops from Meta
+const customerCareWindow = new Map(); // sender -> last inbound timestamp
+
 // Preload authorized recipient numbers
 contacts.set('919884048181', { phone: '919884048181', name: 'Primary Recipient', lastActive: new Date().toISOString() });
 contacts.set('919600131421', { phone: '919600131421', name: 'Second Recipient', lastActive: new Date().toISOString() });
@@ -149,8 +154,42 @@ app.post('/webhook', async (req, res) => {
 
             console.log(`[Inbound Message] From: ${sender} (${profileName}): "${userText}"`);
 
-            // Mark message as read on WhatsApp
+            // Mark message as read on WhatsApp (essential for customer responsiveness)
             whatsapp.markAsRead(msg.id);
+
+            // 🛡️ ANTI-BAN SAFEGUARD 1: Meta-Mandatory Opt-Out / STOP Compliance
+            const upperText = userText.trim().toUpperCase();
+            if (['STOP', 'UNSUBSCRIBE', 'CANCEL', 'QUIT', 'OPTOUT', 'OPT OUT'].includes(upperText)) {
+              optedOutUsers.add(sender);
+              console.log(`[Anti-Ban Shield] Opt-Out registered for ${sender}`);
+              const optOutReply = "You have been unsubscribed from LuxeLiving Furniture automated updates. No further automated messages will be sent. Reply *START* to resume assistance anytime. 🛋️";
+              await whatsapp.sendTextMessage(sender, optOutReply);
+              continue;
+            }
+
+            if (['START', 'UNSTOP'].includes(upperText)) {
+              optedOutUsers.delete(sender);
+              console.log(`[Anti-Ban Shield] Opt-In re-enabled for ${sender}`);
+              const optInReply = "Welcome back to LuxeLiving Furniture Studio! 🛋️✨ How can I assist with your home decor and furniture selections today?";
+              await whatsapp.sendTextMessage(sender, optInReply);
+              continue;
+            }
+
+            if (optedOutUsers.has(sender)) {
+              console.log(`[Anti-Ban Shield] User ${sender} is currently opted out. Discarding message to prevent spam flags.`);
+              continue;
+            }
+
+            // 🛡️ ANTI-BAN SAFEGUARD 2: Concurrency Lock / Anti-Loop Guardrail
+            // Prevents multiple concurrent replies when Meta retries webhook deliveries
+            if (inFlightSenders.has(sender)) {
+              console.log(`[Anti-Ban Shield] In-flight request in progress for ${sender}. Skipping duplicate webhook delivery.`);
+              continue;
+            }
+            inFlightSenders.add(sender);
+
+            // Update 24-hour customer service window timestamp
+            customerCareWindow.set(sender, Date.now());
 
             const inboundRecord = {
               id: msg.id,
@@ -166,11 +205,11 @@ app.post('/webhook', async (req, res) => {
             chatMessages.push(inboundRecord);
             broadcastEvent('new_message', inboundRecord);
 
-            // Generate AI Response using Gemini
+            // Generate AI Response using Gemini with LuxeLiving Sales Persona
             try {
-              console.log(`[Gemini] Processing query from ${sender}...`);
+              console.log(`[Gemini Furniture AI] Processing query from ${sender}...`);
               const aiReply = await gemini.generateReply(sender, userText);
-              console.log(`[Gemini] Response in ${aiReply.durationMs}ms: "${aiReply.text.slice(0, 80)}..."`);
+              console.log(`[Gemini Furniture AI] Response in ${aiReply.durationMs}ms: "${aiReply.text.slice(0, 80)}..."`);
 
               // Send AI Response back to WhatsApp user
               const waRes = await whatsapp.sendTextMessage(sender, aiReply.text);
@@ -180,7 +219,7 @@ app.post('/webhook', async (req, res) => {
                 id: `out_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
                 waMessageId,
                 sender,
-                senderName: process.env.BOT_NAME || 'Aura AI',
+                senderName: process.env.BOT_NAME || 'LuxeLiving Furniture Consultant',
                 text: aiReply.text,
                 direction: 'outbound',
                 type: 'text',
@@ -197,11 +236,18 @@ app.post('/webhook', async (req, res) => {
               broadcastEvent('new_message', outboundRecord);
             } catch (aiErr) {
               console.error('[Bot Error] Failed to generate/send AI response:', aiErr.message);
-              
-              // Send polite error message
-              try {
-                await whatsapp.sendTextMessage(sender, "I'm having a brief connection issue right now. Please try again in a moment! 🙏");
-              } catch (e) {}
+
+              // 🛡️ ANTI-BAN SAFEGUARD 3: Safe Error Catching
+              // If Meta 24-hour window is closed (Error 131026 / 131047), do not retry blindly
+              if (aiErr.message.includes('131026') || aiErr.message.includes('131047') || aiErr.message.includes('24 hours')) {
+                console.warn(`[Anti-Ban Shield] 24-hour customer care window closed for ${sender}. Message skipped to preserve account quality rating.`);
+              } else {
+                try {
+                  await whatsapp.sendTextMessage(sender, "Thank you for contacting LuxeLiving Furniture! 🛋️ Our consultant is reviewing your request and will assist you shortly.");
+                } catch (e) {}
+              }
+            } finally {
+              inFlightSenders.delete(sender);
             }
           }
         }

@@ -114,6 +114,18 @@ document.addEventListener('DOMContentLoaded', () => {
   modeWa.addEventListener('change', updateModeUI);
   modeSim.addEventListener('change', updateModeUI);
 
+  // Quick Sales Consultation Chips Click Handler
+  document.querySelectorAll('.quick-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const prompt = chip.getAttribute('data-prompt');
+      if (prompt && chatInput) {
+        chatInput.value = prompt;
+        chatInput.focus();
+        showToast('Prompt populated! Click send or press Enter.');
+      }
+    });
+  });
+
   // Fetch Status
   async function fetchStatus() {
     try {
