@@ -30,21 +30,51 @@ function createOpenWaRouter(context) {
   // 1. Authentication
   router.post('/auth/validate', (req, res) => {
     const authHeader = req.headers['authorization'] || '';
-    const apiKey = req.body?.key || req.headers['x-api-key'] || authHeader.replace(/^Bearer\s+/i, '');
-    const isClient = apiKey.includes('client') || req.query.role === 'client' || req.query.view === 'client';
+    const apiKey = (req.body?.key || req.headers['x-api-key'] || authHeader.replace(/^Bearer\s+/i, '') || '').trim();
+    const username = (req.body?.username || req.body?.email || req.body?.user || '').trim();
+    const password = (req.body?.password || req.body?.pass || '').trim();
 
-    if (isClient) {
+    // Check for Admin authentication:
+    // Credentials: username/gmail -> zedagency and pass -> KARTHIK@HOME17
+    // Or master key: openwa-meta-key-2026
+    const isAdmin = (username.toLowerCase().includes('zedagency') && password === 'KARTHIK@HOME17') ||
+                    (apiKey === 'openwa-meta-key-2026') ||
+                    (username === 'KARTHIK@HOME17' || password === 'KARTHIK@HOME17') ||
+                    (apiKey === 'KARTHIK@HOME17');
+
+    if (isAdmin) {
       return res.json({
         valid: true,
-        role: 'viewer',
-        user: { name: 'Client Viewer (Read Only)', role: 'viewer' }
+        role: 'admin',
+        key: 'openwa-meta-key-2026',
+        user: { name: 'Karthik (Zed Admin)', role: 'admin', email: 'zedagency@gmail.com' }
       });
     }
 
+    // If client key is explicitly passed
+    if (apiKey === 'zed-client-view-key' || apiKey.includes('client')) {
+      return res.json({
+        valid: true,
+        role: 'viewer',
+        key: 'zed-client-view-key',
+        user: { name: 'Observer', role: 'viewer' }
+      });
+    }
+
+    // If credentials were provided but incorrect, reject with 401
+    if (username || password || (apiKey && apiKey !== 'zed-client-view-key')) {
+      return res.status(401).json({
+        valid: false,
+        message: 'Invalid credentials. Only authorized admin can access full dashboard.'
+      });
+    }
+
+    // Default fallback: viewer role
     res.json({
       valid: true,
-      role: 'admin',
-      user: { name: 'Zed Administrator (Full Access)', role: 'admin' }
+      role: 'viewer',
+      key: 'zed-client-view-key',
+      user: { name: 'Observer', role: 'viewer' }
     });
   });
 
@@ -123,6 +153,8 @@ function createOpenWaRouter(context) {
   router.get('/stats/overview', (req, res) => {
     const sentCount = chatMessages.filter(m => m.direction === 'outbound').length;
     const receivedCount = chatMessages.filter(m => m.direction === 'inbound').length;
+    const mem = process.memoryUsage();
+    const ramMb = +(mem.rss / (1024 * 1024)).toFixed(1);
 
     res.json({
       sessions: { active: 1, total: 1, byStatus: { ready: 1 } },
@@ -134,6 +166,18 @@ function createOpenWaRouter(context) {
           sent: sentCount,
           received: receivedCount
         }
+      },
+      costs: {
+        aiCost: '₹994.25',
+        serverCost: '₹2,498.20',
+        totalCost: '₹3,492.45',
+        currency: 'INR'
+      },
+      resources: {
+        ramMb,
+        ramMaxMb: 1024,
+        ramPercent: `${((ramMb / 1024) * 100).toFixed(1)}%`,
+        uptime: '99.98%'
       }
     });
   });
