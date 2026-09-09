@@ -430,15 +430,45 @@ document.addEventListener('DOMContentLoaded', () => {
     logStream.prepend(item);
   }
 
-  // Load existing messages
+  // Load existing messages for active sender
   async function loadMessages() {
     try {
       const res = await fetch(`/api/messages?sender=${currentSender}`);
       const list = await res.json();
+      const banners = chatContainer.querySelectorAll('.system-chat-date-divider, .system-security-banner');
+      chatContainer.innerHTML = '';
+      banners.forEach(b => chatContainer.appendChild(b));
       list.forEach(appendMessageBubble);
     } catch (e) {
       console.error('Failed to load messages:', e);
     }
+  }
+
+  // Setup Contact Switching
+  function setupContactSwitching() {
+    const activeChatTitle = document.getElementById('active-chat-title');
+    const activeChatInitials = document.getElementById('active-chat-initials');
+
+    document.querySelectorAll('.contact-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.contact-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        currentSender = item.getAttribute('data-sender');
+
+        if (activeChatTitle) {
+          activeChatTitle.textContent = `+${currentSender.slice(0, 2)} ${currentSender.slice(2, 7)} ${currentSender.slice(7)}`;
+        }
+        if (activeChatInitials) {
+          activeChatInitials.textContent = currentSender.slice(2, 4);
+        }
+        if (tplRecipient) {
+          tplRecipient.value = currentSender;
+        }
+
+        loadMessages();
+        showToast(`Active chat: +${currentSender}`);
+      });
+    });
   }
 
   // Initialize Server-Sent Events (SSE) for Real-Time Updates
@@ -452,7 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     eventSource.addEventListener('new_message', (e) => {
       const msg = JSON.parse(e.data);
-      appendMessageBubble(msg);
+      if (!msg.sender || msg.sender === currentSender) {
+        appendMessageBubble(msg);
+      }
       addLogItem(
         `[${msg.direction.toUpperCase()}] ${msg.senderName}: "${msg.text.slice(0, 60)}"`,
         msg.direction
@@ -471,6 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial Boot
   fetchStatus();
+  setupContactSwitching();
   loadMessages();
   initSSE();
   // Poll status periodically to catch tunnel updates
