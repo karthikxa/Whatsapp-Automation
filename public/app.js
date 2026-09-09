@@ -4,8 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const elWebhookUrl = document.getElementById('input-webhook-url');
   const elVerifyToken = document.getElementById('input-verify-token');
+  const elCronUrl = document.getElementById('input-cron-url');
   const btnCopyUrl = document.getElementById('btn-copy-url');
   const btnCopyToken = document.getElementById('btn-copy-token');
+  const btnCopyCron = document.getElementById('btn-copy-cron');
   const toast = document.getElementById('toast');
   const toastMsg = document.getElementById('toast-message');
   
@@ -72,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnCopyUrl.addEventListener('click', () => copyToClipboard(elWebhookUrl.value, 'Webhook URL'));
   btnCopyToken.addEventListener('click', () => copyToClipboard(elVerifyToken.value, 'Verify Token'));
+  if (btnCopyCron) {
+    btnCopyCron.addEventListener('click', () => copyToClipboard(elCronUrl ? elCronUrl.value : '', 'Cron Keep-Alive URL'));
+  }
 
   // Toggle Instructions Drawer
   function toggleDrawer() {
@@ -165,6 +170,35 @@ document.addEventListener('DOMContentLoaded', () => {
         geminiStatusText.textContent = `${data.gemini.model}`;
       } else {
         geminiStatusText.textContent = 'Error';
+      }
+
+      // 15-Minute Keep-Alive Cron URL
+      if (data.app.cronUrl && elCronUrl) {
+        elCronUrl.value = data.app.cronUrl;
+      }
+
+      // Meta Anti-Ban Quota Metrics
+      if (data.app.quota) {
+        const qUsers = document.getElementById('quota-users-text');
+        const qBadge = document.getElementById('quota-tier-badge');
+        if (qUsers) {
+          qUsers.textContent = `${data.app.quota.active24hUsers} / ${data.app.quota.maxDailyUsers} Users/Day`;
+        }
+        if (qBadge) {
+          if (data.app.quota.tierStatus === 'GREEN') {
+            qBadge.style.color = '#25d366';
+            qBadge.style.background = 'rgba(37,211,102,0.15)';
+            qBadge.textContent = '100% Safe';
+          } else if (data.app.quota.tierStatus === 'YELLOW') {
+            qBadge.style.color = '#eab308';
+            qBadge.style.background = 'rgba(234,179,8,0.15)';
+            qBadge.textContent = '80% Quota';
+          } else {
+            qBadge.style.color = '#ef4444';
+            qBadge.style.background = 'rgba(239,68,68,0.15)';
+            qBadge.textContent = 'Daily Limit';
+          }
+        }
       }
 
       // Populate Settings

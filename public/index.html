@@ -108,9 +108,27 @@
               </div>
             </div>
 
+            <div class="cred-box">
+              <label>15-Min Inactivity Cron URL (Render Anti-Sleep):</label>
+              <div class="copy-input-group">
+                <input type="text" id="input-cron-url" readonly value="https://whatsapp-automation-l846.onrender.com/cron/keep-alive">
+                <button class="btn-copy" id="btn-copy-cron" title="Copy Cron Keep-Alive URL">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+
             <div class="cred-box mini-stats">
               <label>WhatsApp Phone ID:</label>
               <span class="code-tag" id="tag-phone-id">1364217103433071</span>
+            </div>
+            <div class="cred-box mini-stats">
+              <label>Meta Tier Quota (Anti-Ban):</label>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <span class="code-tag highlight" id="quota-users-text">0 / 50 Users/Day</span>
+                <span class="badge-safe" id="quota-tier-badge" style="background:rgba(37,211,102,0.15);color:#25d366;font-size:11px;padding:2px 6px;border-radius:4px;font-weight:600;">100% Safe</span>
+              </div>
             </div>
             <div class="cred-box mini-stats">
               <label>Test Recipients:</label>
@@ -122,13 +140,13 @@
           </div>
         </div>
         <div class="banner-actions">
-          <button class="btn-icon" id="btn-toggle-instructions" title="Expand / Collapse Meta Setup Steps">
+          <button class="btn-icon" id="btn-toggle-instructions" title="Expand / Collapse Setup Steps">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Expandable Meta Instructions Drawer -->
+      <!-- Expandable Meta & Cron Instructions Drawer -->
       <div class="setup-steps-drawer hidden" id="setup-steps-drawer">
         <div class="steps-grid">
           <div class="step-card">
@@ -150,6 +168,13 @@
             <div class="step-body">
               <h4>Subscribe to "messages"</h4>
               <p>Click <strong>Manage Webhook Fields</strong> and toggle <strong>Subscribe</strong> on the <strong>messages</strong> row. That's it!</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h4>15-Min Keep-Alive Cron (Anti-Sleep)</h4>
+              <p>Free Render instances spin down after 15 minutes of inactivity. Set up a free ping every 10–14 mins on <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> or <a href="https://uptimerobot.com" target="_blank" rel="noopener">UptimeRobot</a> pointing to the <code>Cron Keep-Alive URL</code> above.</p>
             </div>
           </div>
         </div>
