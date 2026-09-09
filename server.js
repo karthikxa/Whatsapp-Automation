@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 const whatsapp = require('./whatsapp');
 const gemini = require('./gemini');
 const { getTunnelUrl, startTunnel } = require('./tunnel');
@@ -11,6 +13,32 @@ const createOpenWaRouter = require('./openwa-routes');
 
 const app = express();
 const PORT = process.env.PORT || 5055;
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' }
+});
+
+// Socket.IO /events namespace required for OpenWA live connection
+const eventsNsp = io.of('/events');
+eventsNsp.on('connection', (socket) => {
+  console.log('[Socket.IO] OpenWA client connected to /events namespace');
+  socket.emit('message', {
+    type: 'subscribed',
+    sessionId: 'meta-cloud-api',
+    events: ['message.received', 'message.sent', 'session.status']
+  });
+
+  socket.on('message', (msg) => {
+    if (msg && msg.type === 'subscribe') {
+      socket.emit('message', {
+        type: 'subscribed',
+        sessionId: msg.sessionId || 'meta-cloud-api',
+        events: msg.events || ['message.received', 'message.sent']
+      });
+    }
+  });
+});
 
 app.use(cors());
 app.use(express.json());
@@ -22,14 +50,89 @@ const chatMessages = []; // Complete message log
 const contacts = new Map(); // sender -> { name, lastActive, lastMessage }
 const sseClients = new Set(); // Active SSE connections
 
-// 🛡️ Anti-Ban Data Structures
-const optedOutUsers = new Set(); // Stores phone numbers that opted out via STOP/UNSUBSCRIBE
-const inFlightSenders = new Set(); // Prevents concurrency retry loops from Meta
-const customerCareWindow = new Map(); // sender -> last inbound timestamp
+// Preload authorized recipient numbers with recent activity
+contacts.set('919884048181', {
+  phone: '919884048181',
+  name: 'Primary Recipient',
+  lastActive: new Date().toISOString(),
+  lastMessage: 'Please share your delivery address and pincode to dispatch your kit! 🚚✨'
+});
+contacts.set('919600131421', {
+  phone: '919600131421',
+  name: 'Second Recipient',
+  lastActive: new Date().toISOString(),
+  lastMessage: '0% No-Cost EMI is also available!'
+});
 
-// Preload authorized recipient numbers
-contacts.set('919884048181', { phone: '919884048181', name: 'Primary Recipient', lastActive: new Date().toISOString() });
-contacts.set('919600131421', { phone: '919600131421', name: 'Second Recipient', lastActive: new Date().toISOString() });
+// Seed initial realistic sales consultation history so Chats view is immediately active
+chatMessages.push(
+  {
+    id: 'init_msg_1',
+    waMessageId: 'wamid_init_1',
+    sender: '919884048181',
+    senderName: 'Primary Recipient',
+    text: "Hi, I'm interested in your living room furniture collection.",
+    direction: 'inbound',
+    type: 'text',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: 'init_msg_2',
+    waMessageId: 'wamid_init_2',
+    sender: '919884048181',
+    senderName: 'LuxeLiving Furniture Consultant',
+    text: "Hello! 🛋️✨ Welcome to LuxeLiving Furniture Studio! Our Cloud Haven Sectional in Italian Bouclé is handcrafted with deep pocket-spring comfort starting at ₹48,999. Would you like to explore our 3-seater sofas, L-shape sectionals, or solid wood coffee tables?",
+    direction: 'outbound',
+    type: 'text',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 3500000).toISOString()
+  },
+  {
+    id: 'init_msg_3',
+    waMessageId: 'wamid_init_3',
+    sender: '919884048181',
+    senderName: 'Primary Recipient',
+    text: "Do you provide doorstep fabric swatch kits?",
+    direction: 'inbound',
+    type: 'text',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 1800000).toISOString()
+  },
+  {
+    id: 'init_msg_4',
+    waMessageId: 'wamid_init_4',
+    sender: '919884048181',
+    senderName: 'LuxeLiving Furniture Consultant',
+    text: "Yes! 🎨 We provide complimentary doorstep wood and fabric swatch kits with 100% free white-glove delivery and assembly across India. Please share your delivery address and city pincode to arrange shipping! 🚚✨",
+    direction: 'outbound',
+    type: 'text',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 1700000).toISOString()
+  },
+  {
+    id: 'init_msg_5',
+    waMessageId: 'wamid_init_5',
+    sender: '919600131421',
+    senderName: 'Second Recipient',
+    text: "Hello, looking for a solid wood dining table for 6.",
+    direction: 'inbound',
+    type: 'text',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 2400000).toISOString()
+  },
+  {
+    id: 'init_msg_6',
+    waMessageId: 'wamid_init_6',
+    sender: '919600131421',
+    senderName: 'LuxeLiving Furniture Consultant',
+    text: "Welcome to LuxeLiving! 🍽️🪑 Our Royal 6-Seater Solid Oak & Teak Dining Set is handcrafted with brass inlays and ergonomic dining chairs, backed by our 10-year solid wood frame warranty at ₹54,999. 0% No-Cost EMI is also available!",
+    direction: 'outbound',
+    type: 'text',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 2300000).toISOString()
+  }
+);
 
 // ⚡ 15-Minute Inactivity Prevention & Cron Job URL for Render
 app.get('/cron/keep-alive', (req, res) => {
@@ -69,6 +172,34 @@ function broadcastEvent(type, data) {
     } catch (e) {
       sseClients.delete(client);
     }
+  }
+
+  // Real-time event propagation to OpenWA React Dashboard over Socket.IO
+  if (eventsNsp && type === 'new_message') {
+    const isOutbound = data.direction === 'outbound';
+    const cleanPhone = (data.sender || '').replace(/[^0-9]/g, '');
+    const chatId = `${cleanPhone}@s.whatsapp.net`;
+    eventsNsp.emit('message', {
+      type: 'event',
+      payload: {
+        event: isOutbound ? 'message.sent' : 'message.received',
+        sessionId: 'meta-cloud-api',
+        data: {
+          id: data.id,
+          waMessageId: data.waMessageId || data.id,
+          chatId,
+          from: isOutbound ? 'me' : chatId,
+          to: isOutbound ? chatId : 'me',
+          body: data.text,
+          type: 'text',
+          direction: isOutbound ? 'outgoing' : 'incoming',
+          status: data.status || 'delivered',
+          timestamp: Math.floor(new Date(data.timestamp).getTime() / 1000),
+          createdAt: data.timestamp
+        }
+      },
+      timestamp: Math.floor(Date.now() / 1000)
+    });
   }
 }
 
@@ -568,7 +699,7 @@ app.use((req, res, next) => {
 module.exports = app;
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`[Server] WhatsApp Chatbot backend listening on http://localhost:${PORT}`);
     const publicUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || (process.env.RENDER ? 'https://whatsapp-automation-l846.onrender.com' : null);
     startKeepAlive(publicUrl);
