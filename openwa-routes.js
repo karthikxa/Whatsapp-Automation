@@ -6,7 +6,7 @@ const whatsapp = require('./whatsapp');
 const metaGuardian = require('./meta-guardian');
 
 function createOpenWaRouter(context) {
-  const { chatMessages, contacts, broadcastEvent } = context;
+  const { chatMessages, contacts, broadcastEvent, saveMessagesToDisk, saveContactsToDisk } = context;
 
   const SESSION_ID = 'meta-cloud-api';
 
@@ -135,7 +135,7 @@ function createOpenWaRouter(context) {
         kind: 'individual',
         unreadCount: 0,
         timestamp: lastMsg ? Math.floor(new Date(lastMsg.timestamp).getTime() / 1000) : Math.floor(Date.now() / 1000),
-        lastMessage: lastMsg ? lastMsg.text : 'LuxeLiving Furniture Consultant Active',
+        lastMessage: lastMsg ? lastMsg.text : '',
         archived: false,
         pinned: true,
         muted: false
@@ -222,6 +222,9 @@ function createOpenWaRouter(context) {
         return res.status(429).json({ error: quotaCheck.reason, code: quotaCheck.code });
       }
 
+      // Enforce natural human typing pacing to prevent robotic spam flags
+      await metaGuardian.enforceHumanPacing();
+
       // Dispatch via Official Meta Cloud API
       const result = await whatsapp.sendTextMessage(cleanPhone, text);
       metaGuardian.recordMessageSent(cleanPhone);
@@ -239,6 +242,13 @@ function createOpenWaRouter(context) {
       };
 
       chatMessages.push(record);
+      if (saveMessagesToDisk) saveMessagesToDisk();
+      if (contacts.has(cleanPhone)) {
+        const c = contacts.get(cleanPhone);
+        c.lastMessage = text;
+        c.lastActive = record.timestamp;
+        if (saveContactsToDisk) saveContactsToDisk();
+      }
       if (broadcastEvent) broadcastEvent('new_message', record);
 
       res.json({

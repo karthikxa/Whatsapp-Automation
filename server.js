@@ -44,95 +44,84 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// In-memory data stores
+// Persistent data stores for REAL WhatsApp messages
+const DATA_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
+const CONTACTS_FILE = path.join(DATA_DIR, 'contacts.json');
+
 const processedMessageIds = new Set();
-const chatMessages = []; // Complete message log
-const contacts = new Map(); // sender -> { name, lastActive, lastMessage }
+const chatMessages = []; // Complete real message log
+const contacts = new Map(); // sender -> { phone, name, lastActive, lastMessage }
 const sseClients = new Set(); // Active SSE connections
 
-// Preload authorized recipient numbers with recent activity
-contacts.set('919884048181', {
-  phone: '919884048181',
-  name: 'Primary Recipient',
-  lastActive: new Date().toISOString(),
-  lastMessage: 'Please share your delivery address and pincode to dispatch your kit! 🚚✨'
-});
-contacts.set('919600131421', {
-  phone: '919600131421',
-  name: 'Second Recipient',
-  lastActive: new Date().toISOString(),
-  lastMessage: '0% No-Cost EMI is also available!'
-});
-
-// Seed initial realistic sales consultation history so Chats view is immediately active
-chatMessages.push(
-  {
-    id: 'init_msg_1',
-    waMessageId: 'wamid_init_1',
-    sender: '919884048181',
-    senderName: 'Primary Recipient',
-    text: "Hi, I'm interested in your living room furniture collection.",
-    direction: 'inbound',
-    type: 'text',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: 'init_msg_2',
-    waMessageId: 'wamid_init_2',
-    sender: '919884048181',
-    senderName: 'LuxeLiving Furniture Consultant',
-    text: "Hello! 🛋️✨ Welcome to LuxeLiving Furniture Studio! Our Cloud Haven Sectional in Italian Bouclé is handcrafted with deep pocket-spring comfort starting at ₹48,999. Would you like to explore our 3-seater sofas, L-shape sectionals, or solid wood coffee tables?",
-    direction: 'outbound',
-    type: 'text',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 3500000).toISOString()
-  },
-  {
-    id: 'init_msg_3',
-    waMessageId: 'wamid_init_3',
-    sender: '919884048181',
-    senderName: 'Primary Recipient',
-    text: "Do you provide doorstep fabric swatch kits?",
-    direction: 'inbound',
-    type: 'text',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 1800000).toISOString()
-  },
-  {
-    id: 'init_msg_4',
-    waMessageId: 'wamid_init_4',
-    sender: '919884048181',
-    senderName: 'LuxeLiving Furniture Consultant',
-    text: "Yes! 🎨 We provide complimentary doorstep wood and fabric swatch kits with 100% free white-glove delivery and assembly across India. Please share your delivery address and city pincode to arrange shipping! 🚚✨",
-    direction: 'outbound',
-    type: 'text',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 1700000).toISOString()
-  },
-  {
-    id: 'init_msg_5',
-    waMessageId: 'wamid_init_5',
-    sender: '919600131421',
-    senderName: 'Second Recipient',
-    text: "Hello, looking for a solid wood dining table for 6.",
-    direction: 'inbound',
-    type: 'text',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 2400000).toISOString()
-  },
-  {
-    id: 'init_msg_6',
-    waMessageId: 'wamid_init_6',
-    sender: '919600131421',
-    senderName: 'LuxeLiving Furniture Consultant',
-    text: "Welcome to LuxeLiving! 🍽️🪑 Our Royal 6-Seater Solid Oak & Teak Dining Set is handcrafted with brass inlays and ergonomic dining chairs, backed by our 10-year solid wood frame warranty at ₹54,999. 0% No-Cost EMI is also available!",
-    direction: 'outbound',
-    type: 'text',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 2300000).toISOString()
+function saveMessagesToDisk() {
+  try {
+    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(chatMessages, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[Storage Error] Could not save messages:', err.message);
   }
-);
+}
+
+function saveContactsToDisk() {
+  try {
+    const arr = Array.from(contacts.entries());
+    fs.writeFileSync(CONTACTS_FILE, JSON.stringify(arr, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[Storage Error] Could not save contacts:', err.message);
+  }
+}
+
+// Load real messages if file exists
+if (fs.existsSync(MESSAGES_FILE)) {
+  try {
+    const raw = fs.readFileSync(MESSAGES_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      chatMessages.push(...parsed);
+      console.log(`[Storage] Loaded ${chatMessages.length} real messages from disk`);
+    }
+  } catch (e) {
+    console.warn('[Storage] Error loading messages.json:', e.message);
+  }
+}
+
+// Load real contacts if file exists
+if (fs.existsSync(CONTACTS_FILE)) {
+  try {
+    const raw = fs.readFileSync(CONTACTS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      for (const [key, val] of parsed) {
+        contacts.set(key, val);
+      }
+      console.log(`[Storage] Loaded ${contacts.size} real contacts from disk`);
+    }
+  } catch (e) {
+    console.warn('[Storage] Error loading contacts.json:', e.message);
+  }
+}
+
+// Ensure pre-registered authorized recipient numbers exist
+if (!contacts.has('919884048181')) {
+  contacts.set('919884048181', {
+    phone: '919884048181',
+    name: 'Primary Recipient',
+    lastActive: new Date().toISOString(),
+    lastMessage: ''
+  });
+}
+if (!contacts.has('919600131421')) {
+  contacts.set('919600131421', {
+    phone: '919600131421',
+    name: 'Second Recipient',
+    lastActive: new Date().toISOString(),
+    lastMessage: ''
+  });
+}
+saveContactsToDisk();
 
 // ⚡ 15-Minute Inactivity Prevention & Cron Job URL for Render
 app.get('/cron/keep-alive', (req, res) => {
@@ -306,7 +295,14 @@ app.post('/webhook', async (req, res) => {
               userText = `[Unsupported message type: ${msg.type}]`;
             }
 
-            console.log(`[Inbound Message] From: ${sender} (${profileName}): "${userText}"`);
+            console.log(`[Inbound Message] From: ${sender} (${profileName}): "${userText}"`);            metaGuardian.recordInboundMessage(sender);
+            contacts.set(sender, {
+              phone: sender,
+              name: profileName,
+              lastActive: new Date().toISOString(),
+              lastMessage: userText
+            });
+            saveContactsToDisk();
 
             // Mark message as read on WhatsApp (essential for customer responsiveness)
             whatsapp.markAsRead(msg.id);
@@ -314,6 +310,7 @@ app.post('/webhook', async (req, res) => {
             // 🛡️ ANTI-BAN SAFEGUARD 1: Meta-Mandatory Opt-Out / STOP Compliance
             const upperText = userText.trim().toUpperCase();
             if (['STOP', 'UNSUBSCRIBE', 'CANCEL', 'QUIT', 'OPTOUT', 'OPT OUT'].includes(upperText)) {
+              metaGuardian.optOut(sender);
               optedOutUsers.add(sender);
               console.log(`[Anti-Ban Shield] Opt-Out registered for ${sender}`);
               const optOutReply = "You have been unsubscribed from LuxeLiving Furniture automated updates. No further automated messages will be sent. Reply *START* to resume assistance anytime. 🛋️";
@@ -322,6 +319,7 @@ app.post('/webhook', async (req, res) => {
             }
 
             if (['START', 'UNSTOP'].includes(upperText)) {
+              metaGuardian.optIn(sender);
               optedOutUsers.delete(sender);
               console.log(`[Anti-Ban Shield] Opt-In re-enabled for ${sender}`);
               const optInReply = "Welcome back to LuxeLiving Furniture Studio! 🛋️✨ How can I assist with your home decor and furniture selections today?";
@@ -329,7 +327,7 @@ app.post('/webhook', async (req, res) => {
               continue;
             }
 
-            if (optedOutUsers.has(sender)) {
+            if (metaGuardian.isOptedOut(sender) || optedOutUsers.has(sender)) {
               console.log(`[Anti-Ban Shield] User ${sender} is currently opted out. Discarding message to prevent spam flags.`);
               continue;
             }
@@ -357,6 +355,7 @@ app.post('/webhook', async (req, res) => {
             };
 
             chatMessages.push(inboundRecord);
+            saveMessagesToDisk();
             broadcastEvent('new_message', inboundRecord);
 
             // 🛡️ ANTI-BAN SAFEGUARD 4: Meta Daily Unique User Quota Check
@@ -373,7 +372,7 @@ app.post('/webhook', async (req, res) => {
               const aiReply = await gemini.generateReply(sender, userText);
               console.log(`[Gemini Furniture AI] Response in ${aiReply.durationMs}ms: "${aiReply.text.slice(0, 80)}..."`);
 
-              // 🛡️ ANTI-BAN SAFEGUARD 5: Organic Human Cadence Delay (1.2s - 1.8s)
+              // 🛡️ ANTI-BAN SAFEGUARD 5: Organic Human Cadence Delay (1.2s - 2.0s)
               // Prevents Meta automated spam algorithms from detecting robotic flood
               await metaGuardian.enforceHumanPacing();
 
@@ -400,6 +399,13 @@ app.post('/webhook', async (req, res) => {
               };
 
               chatMessages.push(outboundRecord);
+              saveMessagesToDisk();
+              if (contacts.has(sender)) {
+                const c = contacts.get(sender);
+                c.lastActive = outboundRecord.timestamp;
+                c.lastMessage = outboundRecord.text;
+                saveContactsToDisk();
+              }
               broadcastEvent('new_message', outboundRecord);
             } catch (aiErr) {
               console.error('[Bot Error] Failed to generate/send AI response:', aiErr.message);
@@ -444,12 +450,20 @@ app.get('/api/events', (req, res) => {
   });
 });
 
+// Broadcast SSE event
+function broadcastSSE(type, data) {
+  const payload = `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const client of sseClients) {
+    client.write(payload);
+  }
+}
+
 // -------------------------------------------------------------
 // REST APIs for Dashboard and Simulator
 // -------------------------------------------------------------
 
 // Mount OpenWA Dashboard REST API Adapter
-app.use('/api', createOpenWaRouter({ chatMessages, contacts, broadcastEvent }));
+app.use('/api', createOpenWaRouter({ chatMessages, contacts, broadcastEvent, saveMessagesToDisk, saveContactsToDisk }));
 
 // System Status, Memory Metrics, and Credentials Verification
 app.get('/api/status', async (req, res) => {
