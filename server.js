@@ -7,6 +7,7 @@ const gemini = require('./gemini');
 const { getTunnelUrl, startTunnel } = require('./tunnel');
 const metaGuardian = require('./meta-guardian');
 const { startKeepAlive } = require('./keep-alive');
+const createOpenWaRouter = require('./openwa-routes');
 
 const app = express();
 const PORT = process.env.PORT || 5055;
@@ -316,6 +317,9 @@ app.get('/api/events', (req, res) => {
 // REST APIs for Dashboard and Simulator
 // -------------------------------------------------------------
 
+// Mount OpenWA Dashboard REST API Adapter
+app.use('/api', createOpenWaRouter({ chatMessages, contacts, broadcastEvent }));
+
 // System Status, Memory Metrics, and Credentials Verification
 app.get('/api/status', async (req, res) => {
   const publicUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || getTunnelUrl();
@@ -550,6 +554,15 @@ app.post('/api/settings', (req, res) => {
     systemPrompt: gemini.getSystemPrompt(),
     model: gemini.getModel()
   });
+});
+
+// SPA fallback for OpenWA client-side routing (/sessions, /chats, /webhooks, /templates, etc.)
+app.use((req, res, next) => {
+  if (req.method !== 'GET') return next();
+  if (req.path.startsWith('/api') || req.path.startsWith('/webhook') || req.path.startsWith('/cron') || req.path.startsWith('/health') || req.path.startsWith('/assets')) {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 module.exports = app;
