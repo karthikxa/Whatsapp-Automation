@@ -558,7 +558,7 @@ app.post('/api/settings', (req, res) => {
 
 // SPA fallback for OpenWA client-side routing (/sessions, /chats, /webhooks, /templates, etc.)
 app.use((req, res, next) => {
-  if (req.method !== 'GET') return next();
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
   if (req.path.startsWith('/api') || req.path.startsWith('/webhook') || req.path.startsWith('/cron') || req.path.startsWith('/health') || req.path.startsWith('/assets')) {
     return next();
   }
