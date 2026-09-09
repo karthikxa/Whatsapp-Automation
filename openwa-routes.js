@@ -29,24 +29,67 @@ function createOpenWaRouter(context) {
 
   // 1. Authentication
   router.post('/auth/validate', (req, res) => {
+    const authHeader = req.headers['authorization'] || '';
+    const apiKey = req.body?.key || req.headers['x-api-key'] || authHeader.replace(/^Bearer\s+/i, '');
+    const isClient = apiKey.includes('client') || req.query.role === 'client' || req.query.view === 'client';
+
+    if (isClient) {
+      return res.json({
+        valid: true,
+        role: 'viewer',
+        user: { name: 'Client Viewer (Read Only)', role: 'viewer' }
+      });
+    }
+
     res.json({
       valid: true,
       role: 'admin',
-      user: { name: 'Meta Cloud Administrator', role: 'admin' }
+      user: { name: 'Zed Administrator (Full Access)', role: 'admin' }
     });
+  });
+
+  // 🛡️ ROLE GUARD MIDDLEWARE: Strict read-only enforcement for Client Viewers
+  router.use((req, res, next) => {
+    if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
+      return next();
+    }
+    // Allow auth validation and chat read receipts
+    if (req.path === '/auth/validate' || req.path.endsWith('/chats/read')) {
+      return next();
+    }
+    const authHeader = req.headers['authorization'] || '';
+    const userApiKey = req.body?.key || req.headers['x-api-key'] || authHeader.replace(/^Bearer\s+/i, '') || '';
+    const userRole = req.headers['x-user-role'] || '';
+    if (userApiKey.includes('client') || userRole === 'viewer') {
+      return res.status(403).json({
+        error: 'Access Denied: Client accounts have read-only access. You can only view metrics, conversations, and status.',
+        code: 'CLIENT_READ_ONLY'
+      });
+    }
+    next();
   });
 
   router.get('/auth/api-keys', (req, res) => {
     res.json([
       {
         id: 'key-meta-admin',
-        name: 'Master Cloud API Key',
+        name: 'Master Administrator Key',
         keyPrefix: 'openwa_m…',
         role: 'admin',
         isActive: true,
         createdAt: '2026-09-09T08:00:00.000Z',
         lastUsedAt: new Date().toISOString(),
         usageCount: 42
+      },
+      {
+        id: 'key-zed-client',
+        name: 'Client Read-Only Observer Key',
+        keyPrefix: 'zed_cli…',
+        role: 'viewer',
+        isActive: true,
+        createdAt: '2026-09-09T08:00:00.000Z',
+        lastUsedAt: new Date().toISOString(),
+        usageCount: 18
       }
     ]);
   });
@@ -214,6 +257,16 @@ function createOpenWaRouter(context) {
 
       if (!text) {
         return res.status(400).json({ error: 'Text message is required' });
+      }
+
+      // 🛡️ ROLE GUARD: Clients have read-only observer access
+      const authHeader = req.headers['authorization'] || '';
+      const userApiKey = req.headers['x-api-key'] || authHeader.replace(/^Bearer\s+/i, '') || '';
+      if (userApiKey.includes('client') || req.headers['x-user-role'] === 'viewer') {
+        return res.status(403).json({
+          error: 'Access Denied: Client accounts have read-only access. Only administrators can send messages.',
+          code: 'CLIENT_READ_ONLY'
+        });
       }
 
       // Check Meta Tier Limit

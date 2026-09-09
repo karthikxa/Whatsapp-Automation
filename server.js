@@ -702,6 +702,17 @@ app.post('/api/settings', (req, res) => {
   });
 });
 
+// Dedicated shortcuts for client portal and admin dashboard
+app.use((req, res, next) => {
+  if (req.path === '/client' || req.path.startsWith('/client/') || req.path === '/portal' || req.path.startsWith('/portal/')) {
+    return res.redirect('/?view=client');
+  }
+  if (req.path === '/admin' || req.path.startsWith('/admin/')) {
+    return res.redirect('/?view=admin');
+  }
+  next();
+});
+
 // SPA fallback for OpenWA client-side routing (/sessions, /chats, /webhooks, /templates, etc.)
 app.use((req, res, next) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return next();
