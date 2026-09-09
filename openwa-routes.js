@@ -212,17 +212,18 @@ function createOpenWaRouter(context) {
   router.get('/sessions/:id/chats', (req, res) => {
     const chatList = Array.from(contacts.values()).map(c => {
       const jid = c.phone.includes('@') ? c.phone : `${c.phone}@s.whatsapp.net`;
-      const contactMsgs = chatMessages.filter(m => m.sender === c.phone);
+      const cleanPhone = c.phone.replace(/[^0-9]/g, '');
+      const contactMsgs = chatMessages.filter(m => m.sender && m.sender.replace(/[^0-9]/g, '') === cleanPhone);
       const lastMsg = contactMsgs[contactMsgs.length - 1];
 
       return {
         id: jid,
-        name: c.name ? `${c.name} (+${c.phone})` : `+${c.phone}`,
+        name: c.name || `+${c.phone}`,
         isGroup: false,
         kind: 'individual',
         unreadCount: 0,
         timestamp: lastMsg ? Math.floor(new Date(lastMsg.timestamp).getTime() / 1000) : Math.floor(Date.now() / 1000),
-        lastMessage: lastMsg ? lastMsg.text : '',
+        lastMessage: lastMsg ? lastMsg.text : (c.lastMessage || ''),
         archived: false,
         pinned: true,
         muted: false
@@ -237,7 +238,7 @@ function createOpenWaRouter(context) {
     const list = Array.from(contacts.values()).map(c => ({
       id: c.phone.includes('@') ? c.phone : `${c.phone}@s.whatsapp.net`,
       name: c.name || `+${c.phone}`,
-      pushName: c.name || 'Valued Client',
+      pushName: c.name || `+${c.phone}`,
       number: c.phone
     }));
     res.json(list);
@@ -262,21 +263,23 @@ function createOpenWaRouter(context) {
     const cleanPhone = rawChatId.replace(/@.*$/, '').replace(/[^0-9]/g, '');
 
     const filtered = cleanPhone
-      ? chatMessages.filter(m => m.sender.replace(/[^0-9]/g, '') === cleanPhone)
+      ? chatMessages.filter(m => m.sender && m.sender.replace(/[^0-9]/g, '') === cleanPhone)
       : chatMessages;
 
     const formatted = filtered.map(m => {
-      const senderPhone = m.sender.replace(/[^0-9]/g, '');
+      const senderPhone = m.sender ? m.sender.replace(/[^0-9]/g, '') : '';
       const chatId = `${senderPhone}@s.whatsapp.net`;
+      const isOutbound = m.direction === 'outbound';
       return {
         id: m.id,
         waMessageId: m.waMessageId || m.id,
         chatId: chatId,
-        from: m.direction === 'inbound' ? chatId : 'me',
-        to: m.direction === 'outbound' ? chatId : 'me',
+        from: isOutbound ? 'me' : chatId,
+        to: isOutbound ? chatId : 'me',
+        fromMe: isOutbound,
         body: m.text,
         type: m.type === 'template' ? 'text' : (m.type || 'text'),
-        direction: m.direction === 'inbound' ? 'incoming' : 'outgoing',
+        direction: isOutbound ? 'outgoing' : 'incoming',
         status: m.status || 'delivered',
         timestamp: Math.floor(new Date(m.timestamp).getTime() / 1000),
         createdAt: m.timestamp
@@ -290,7 +293,34 @@ function createOpenWaRouter(context) {
   });
 
   router.get('/sessions/:id/messages/:chatId/history', (req, res) => {
-    res.json([]);
+    const rawChatId = req.params.chatId || '';
+    const cleanPhone = rawChatId.replace(/@.*$/, '').replace(/[^0-9]/g, '');
+
+    const filtered = cleanPhone
+      ? chatMessages.filter(m => m.sender && m.sender.replace(/[^0-9]/g, '') === cleanPhone)
+      : chatMessages;
+
+    const formatted = filtered.map(m => {
+      const senderPhone = m.sender ? m.sender.replace(/[^0-9]/g, '') : '';
+      const chatId = `${senderPhone}@s.whatsapp.net`;
+      const isOutbound = m.direction === 'outbound';
+      return {
+        id: m.id,
+        waMessageId: m.waMessageId || m.id,
+        chatId: chatId,
+        from: isOutbound ? 'me' : chatId,
+        to: isOutbound ? chatId : 'me',
+        fromMe: isOutbound,
+        body: m.text,
+        type: m.type === 'template' ? 'text' : (m.type || 'text'),
+        direction: isOutbound ? 'outgoing' : 'incoming',
+        status: m.status || 'delivered',
+        timestamp: Math.floor(new Date(m.timestamp).getTime() / 1000),
+        createdAt: m.timestamp
+      };
+    });
+
+    res.json(formatted);
   });
 
   // 7. Send Message from OpenWA Interface

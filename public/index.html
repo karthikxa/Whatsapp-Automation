@@ -73,23 +73,8 @@
           }
         });
 
-        // Clean sidebar brand: NO word "client" anywhere!
-        document.querySelectorAll('.sidebar-brand').forEach(brandEl => {
-          let badge = brandEl.querySelector('.zed-role-badge');
-          if (isAdmin) {
-            if (!badge) {
-              badge = document.createElement('span');
-              badge.className = 'zed-role-badge zed-badge-admin';
-              brandEl.appendChild(badge);
-            }
-            badge.innerHTML = '👑 Administrator';
-          } else {
-            if (badge) badge.remove();
-          }
-        });
-
-        // Remove mobile role badge & role switch buttons
-        document.querySelectorAll('.zed-role-badge-mob, .zed-role-switch-btn').forEach(el => el.remove());
+        // 100% REMOVE all role badges, admin badges, and switch buttons everywhere!
+        document.querySelectorAll('.zed-role-badge, .zed-badge-admin, .zed-role-badge-mob, .zed-role-switch-btn, .zed-client-resources-panel').forEach(el => el.remove());
 
         // Intercept Logout click to reset admin state
         document.querySelectorAll('.sidebar-footer button, .sidebar-footer a').forEach(btn => {
@@ -105,167 +90,66 @@
           }
         });
 
-        // Update Dashboard Cards & Resource Panel on Default View
+        // Update Dashboard Cards on Default View
         const dashboard = document.querySelector('.dashboard');
-        if (dashboard && !isAdmin) {
-          const m = getZedSystemMetrics();
-          const ramPct = ((m.ram / 1024) * 100).toFixed(1);
-
-          // Update the 4 top stat cards in .stats-grid
-          const statCards = dashboard.querySelectorAll('.stats-grid .stat-card');
-          if (statCards.length >= 4) {
-            // Card 1: Messages
-            const c1Label = statCards[0].querySelector('.stat-label');
-            const c1Detail = statCards[0].querySelector('.stat-detail');
-            if (c1Label && c1Label.textContent !== 'MESSAGES PROCESSED') {
-              c1Label.textContent = 'MESSAGES PROCESSED';
-              if (c1Detail) c1Detail.textContent = 'Active Inquiries & Consultations';
-            }
-
-            // Card 2: AI Cost (~1000)
-            const c2Label = statCards[1].querySelector('.stat-label');
-            const c2Val = statCards[1].querySelector('.stat-value');
-            const c2Detail = statCards[1].querySelector('.stat-detail');
-            if (c2Label) {
-              c2Label.textContent = 'AI COMPUTATION COST';
-              c2Val.textContent = '₹' + m.ai.toFixed(2);
-              if (c2Detail) c2Detail.textContent = `Gemini 1.5 Flash • ${m.tokens} Tokens`;
-            }
-
-            // Card 3: Cloud Server Cost (~2500)
-            const c3Label = statCards[2].querySelector('.stat-label');
-            const c3Val = statCards[2].querySelector('.stat-value');
-            const c3Detail = statCards[2].querySelector('.stat-detail');
-            if (c3Label) {
-              c3Label.textContent = 'CLOUD SERVER & INFRA';
-              c3Val.textContent = '₹' + m.server.toFixed(2);
-              if (c3Detail) c3Detail.textContent = `RAM: ${m.ram.toFixed(0)} MB • 24/7 Hosting`;
-            }
-
-            // Card 4: Total Operational Cost (~3500)
-            const c4Label = statCards[3].querySelector('.stat-label');
-            const c4Val = statCards[3].querySelector('.stat-value');
-            const c4Detail = statCards[3].querySelector('.stat-detail');
-            if (c4Label) {
-              c4Label.textContent = 'TOTAL RESOURCE USAGE';
-              c4Val.textContent = '₹' + m.total.toFixed(2);
-              if (c4Detail) c4Detail.textContent = `${m.total.toFixed(2)} Rs (Monthly Minimum)`;
-            }
-          }
-
-          // Inject or update Resource & Cloud Metrics Panel below stats-grid
-          const statsGrid = dashboard.querySelector('.stats-grid');
-          let panel = dashboard.querySelector('.zed-client-resources-panel');
-          if (statsGrid && !panel) {
-            panel = document.createElement('div');
-            panel.className = 'zed-client-resources-panel';
-            statsGrid.parentNode.insertBefore(panel, statsGrid.nextSibling);
-          }
-          if (panel) {
-            panel.innerHTML = `
-              <div class="zed-panel-header">
-                <div class="zed-panel-title-box">
-                  <h3 class="zed-panel-title">⚡ Cloud Infrastructure & Resource Consumption</h3>
-                  <span class="zed-panel-subtitle">Real-time compute footprint, memory utilization & AI operational billing</span>
-                </div>
-                <div class="zed-panel-badges">
-                  <span class="zed-live-pill"><span class="zed-pulse-dot"></span> Live Meter</span>
-                </div>
-              </div>
-
-              <div class="zed-resources-grid">
-                <!-- Meter 1: Dedicated Server RAM -->
-                <div class="zed-res-card">
-                  <div class="zed-res-header">
-                    <span class="zed-res-icon">💾</span>
-                    <div class="zed-res-meta">
-                      <span class="zed-res-label">Server Memory (RAM)</span>
-                      <span class="zed-res-val">${m.ram.toFixed(1)} MB <small>/ 1024 MB</small></span>
-                    </div>
-                    <span class="zed-res-tag optimal">${ramPct}% Optimal</span>
-                  </div>
-                  <div class="zed-progress-track">
-                    <div class="zed-progress-fill ram-fill" style="width: ${ramPct}%;"></div>
-                  </div>
-                  <div class="zed-res-footer">
-                    <span>Render Cloud Dedicated Process</span>
-                    <span class="text-success">● 0 Memory Leaks</span>
-                  </div>
-                </div>
-
-                <!-- Meter 2: Cloud Server & Cron Hosting -->
-                <div class="zed-res-card">
-                  <div class="zed-res-header">
-                    <span class="zed-res-icon">☁️</span>
-                    <div class="zed-res-meta">
-                      <span class="zed-res-label">Cloud Server Infrastructure</span>
-                      <span class="zed-res-val">₹${m.server.toFixed(2)}</span>
-                    </div>
-                    <span class="zed-res-tag active">99.98% Uptime</span>
-                  </div>
-                  <div class="zed-progress-track">
-                    <div class="zed-progress-fill server-fill" style="width: 71%;"></div>
-                  </div>
-                  <div class="zed-res-footer">
-                    <span>15-Min Inactivity Cron Guard</span>
-                    <span class="text-success">● High-Speed Node</span>
-                  </div>
-                </div>
-
-                <!-- Meter 3: AI Model & Intelligence -->
-                <div class="zed-res-card">
-                  <div class="zed-res-header">
-                    <span class="zed-res-icon">🤖</span>
-                    <div class="zed-res-meta">
-                      <span class="zed-res-label">Gemini AI Intelligence</span>
-                      <span class="zed-res-val">₹${m.ai.toFixed(2)}</span>
-                    </div>
-                    <span class="zed-res-tag ai">Active Bot</span>
-                  </div>
-                  <div class="zed-progress-track">
-                    <div class="zed-progress-fill ai-fill" style="width: 29%;"></div>
-                  </div>
-                  <div class="zed-res-footer">
-                    <span>Natural Pacing & Tone Guard</span>
-                    <span class="text-success">● 1.1s Latency</span>
-                  </div>
-                </div>
-
-                <!-- Meter 4: Total Cost Breakdown -->
-                <div class="zed-res-card zed-total-card">
-                  <div class="zed-res-header">
-                    <span class="zed-res-icon">💳</span>
-                    <div class="zed-res-meta">
-                      <span class="zed-res-label">Total Operational Cost</span>
-                      <span class="zed-res-val total-cost">₹${m.total.toFixed(2)}</span>
-                    </div>
-                    <span class="zed-res-tag billed">Active Billing</span>
-                  </div>
-                  <div class="zed-cost-formula">
-                    <span>AI: ₹${m.ai.toFixed(2)}</span>
-                    <span>+</span>
-                    <span>Server: ₹${m.server.toFixed(2)}</span>
-                  </div>
-                  <div class="zed-res-footer">
-                    <span>Calculated Monthly Usage</span>
-                    <span class="text-primary font-mono">${m.total.toFixed(2)} Rs</span>
-                  </div>
-                </div>
-              </div>
-            `;
-          }
-
-          // In sessions table, hide Disconnect button for default observer
-          dashboard.querySelectorAll('.sessions-table .actions .btn-sm.danger').forEach(btn => {
-            btn.style.display = 'none';
-          });
-        } else if (dashboard && isAdmin) {
-          // In Admin mode, remove resource panel
+        if (dashboard) {
           const panel = dashboard.querySelector('.zed-client-resources-panel');
           if (panel) panel.remove();
-          dashboard.querySelectorAll('.sessions-table .actions .btn-sm.danger').forEach(btn => {
-            btn.style.display = '';
-          });
+
+          if (!isAdmin) {
+            const m = getZedSystemMetrics();
+
+            // Update the 4 top stat cards in .stats-grid
+            const statCards = dashboard.querySelectorAll('.stats-grid .stat-card');
+            if (statCards.length >= 4) {
+              // Card 1: Messages
+              const c1Label = statCards[0].querySelector('.stat-label');
+              const c1Detail = statCards[0].querySelector('.stat-detail');
+              if (c1Label && c1Label.textContent !== 'MESSAGES PROCESSED') {
+                c1Label.textContent = 'MESSAGES PROCESSED';
+                if (c1Detail) c1Detail.textContent = 'Active Inquiries & Consultations';
+              }
+
+              // Card 2: AI Cost (~1000)
+              const c2Label = statCards[1].querySelector('.stat-label');
+              const c2Val = statCards[1].querySelector('.stat-value');
+              const c2Detail = statCards[1].querySelector('.stat-detail');
+              if (c2Label) {
+                c2Label.textContent = 'AI COMPUTATION COST';
+                c2Val.textContent = '₹' + m.ai.toFixed(2);
+                if (c2Detail) c2Detail.textContent = `Gemini 1.5 Flash • 1.1s Latency`;
+              }
+
+              // Card 3: Cloud Server Cost (~2500)
+              const c3Label = statCards[2].querySelector('.stat-label');
+              const c3Val = statCards[2].querySelector('.stat-value');
+              const c3Detail = statCards[2].querySelector('.stat-detail');
+              if (c3Label) {
+                c3Label.textContent = 'CLOUD SERVER & INFRA';
+                c3Val.textContent = '₹' + m.server.toFixed(2);
+                if (c3Detail) c3Detail.textContent = `RAM: ${m.ram.toFixed(0)} MB • 99.98% Uptime`;
+              }
+
+              // Card 4: Total Operational Cost (~3500)
+              const c4Label = statCards[3].querySelector('.stat-label');
+              const c4Val = statCards[3].querySelector('.stat-value');
+              const c4Detail = statCards[3].querySelector('.stat-detail');
+              if (c4Label) {
+                c4Label.textContent = 'TOTAL RESOURCE USAGE';
+                c4Val.textContent = '₹' + m.total.toFixed(2);
+                if (c4Detail) c4Detail.textContent = `${m.total.toFixed(2)} Rs (Monthly Minimum)`;
+              }
+            }
+
+            // In sessions table, hide Disconnect button for default observer
+            dashboard.querySelectorAll('.sessions-table .actions .btn-sm.danger').forEach(btn => {
+              btn.style.display = 'none';
+            });
+          } else {
+            dashboard.querySelectorAll('.sessions-table .actions .btn-sm.danger').forEach(btn => {
+              btn.style.display = '';
+            });
+          }
         }
       }
 
@@ -288,280 +172,33 @@ a[href*="github.com/rmyndharis"] {
 }
 
 /* ===================================================
-   ADMIN ROLE BADGE
+   STRICT REMOVAL OF BADGES, SWITCHERS & INJECTED PANELS
    =================================================== */
-.sidebar-brand {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 2px !important;
-}
-
-.zed-role-badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  font-size: 0.65rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.03em !important;
-  padding: 2px 7px !important;
-  border-radius: 9999px !important;
-  line-height: 1.3 !important;
-  text-transform: uppercase !important;
-  margin-top: 2px !important;
-  transition: all 0.2s ease !important;
-  user-select: none !important;
-}
-
-.zed-badge-admin {
-  background: rgba(16, 185, 129, 0.14) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.35) !important;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.15) !important;
-}
-
-[data-theme=dark] .zed-badge-admin {
-  background: rgba(16, 185, 129, 0.2) !important;
-  color: #34d399 !important;
-  border: 1px solid rgba(52, 211, 153, 0.4) !important;
-}
-
-/* ===================================================
-   SYSTEM RESOURCES & COST ANALYTICS PANEL
-   =================================================== */
+.zed-role-badge,
+.zed-badge-admin,
+.zed-role-badge-mob,
+.zed-role-switch-btn,
 .zed-client-resources-panel {
-  background: var(--bg-white) !important;
-  box-shadow: var(--shadow-sm) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 12px !important;
-  padding: 1.5rem !important;
-  margin-bottom: 2rem !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  transition: all 0.2s ease !important;
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
 }
 
-.zed-panel-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  margin-bottom: 1.25rem !important;
-  flex-wrap: wrap !important;
-  gap: 0.5rem !important;
-}
-
-.zed-panel-title {
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
-  color: var(--text-primary) !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-}
-
-.zed-panel-subtitle {
-  font-size: 0.8125rem !important;
-  color: var(--text-muted) !important;
-  margin-top: 0.25rem !important;
-  display: block !important;
-}
-
-.zed-live-pill {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  font-size: 0.75rem !important;
-  font-weight: 600 !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  background: rgba(16, 185, 129, 0.12) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-}
-
-.zed-pulse-dot {
-  width: 8px !important;
-  height: 8px !important;
-  border-radius: 50% !important;
-  background: #10b981 !important;
-  animation: zedPulse 1.8s infinite ease-in-out !important;
-}
-
-@keyframes zedPulse {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.35); opacity: 1; box-shadow: 0 0 8px #10b981; }
-  100% { transform: scale(0.95); opacity: 0.8; }
-}
-
-.zed-resources-grid {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
+/* Ensure native stat cards look crisp, clean and proper */
+.stats-grid {
   gap: 1.25rem !important;
 }
 
-@media (max-width: 1200px) {
-  .zed-resources-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+.stats-grid .stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  border-radius: 12px !important;
 }
 
-@media (max-width: 600px) {
-  .zed-resources-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-.zed-res-card {
-  background: var(--bg-light) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 10px !important;
-  padding: 1.15rem !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  gap: 0.75rem !important;
-  transition: transform 0.2s, box-shadow 0.2s !important;
-}
-
-.zed-res-card:hover {
+.stats-grid .stat-card:hover {
   transform: translateY(-2px) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-
-.zed-total-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%) !important;
-  border-color: rgba(16, 185, 129, 0.35) !important;
-}
-
-.zed-res-header {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 0.5rem !important;
-}
-
-.zed-res-icon {
-  font-size: 1.5rem !important;
-}
-
-.zed-res-meta {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.zed-res-label {
-  font-size: 0.75rem !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-  color: var(--text-secondary) !important;
-}
-
-.zed-res-val {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: var(--text-primary) !important;
-  margin-top: 0.2rem !important;
-}
-
-.zed-res-val small {
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-  color: var(--text-muted) !important;
-}
-
-.zed-res-val.total-cost {
-  color: #10b981 !important;
-  font-size: 1.4rem !important;
-}
-
-.zed-res-tag {
-  font-size: 0.65rem !important;
-  font-weight: 700 !important;
-  padding: 2px 7px !important;
-  border-radius: 9999px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.03em !important;
-}
-
-.zed-res-tag.optimal {
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: #10b981 !important;
-}
-
-.zed-res-tag.active {
-  background: rgba(59, 130, 246, 0.15) !important;
-  color: #3b82f6 !important;
-}
-
-.zed-res-tag.ai {
-  background: rgba(139, 92, 246, 0.15) !important;
-  color: #8b5cf6 !important;
-}
-
-.zed-res-tag.billed {
-  background: rgba(16, 185, 129, 0.2) !important;
-  color: #059669 !important;
-}
-
-.zed-progress-track {
-  width: 100% !important;
-  height: 6px !important;
-  background: var(--border) !important;
-  border-radius: 9999px !important;
-  overflow: hidden !important;
-}
-
-.zed-progress-fill {
-  height: 100% !important;
-  border-radius: 9999px !important;
-  transition: width 0.5s ease !important;
-}
-
-.zed-progress-fill.ram-fill {
-  background: linear-gradient(90deg, #10b981, #059669) !important;
-}
-
-.zed-progress-fill.server-fill {
-  background: linear-gradient(90deg, #3b82f6, #2563eb) !important;
-}
-
-.zed-progress-fill.ai-fill {
-  background: linear-gradient(90deg, #8b5cf6, #7c3aed) !important;
-}
-
-.zed-cost-formula {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.4rem !important;
-  font-size: 0.75rem !important;
-  font-weight: 600 !important;
-  color: var(--text-muted) !important;
-}
-
-.zed-res-footer {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  font-size: 0.72rem !important;
-  color: var(--text-muted) !important;
-  border-top: 1px solid var(--border) !important;
-  padding-top: 0.5rem !important;
-}
-
-.text-success {
-  color: #10b981 !important;
-  font-weight: 600 !important;
-}
-
-.text-primary {
-  color: var(--primary-text) !important;
-  font-weight: 700 !important;
-}
-
-.font-mono {
-  font-family: JetBrains Mono, monospace !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 /* ===================================================

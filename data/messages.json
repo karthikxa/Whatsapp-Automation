@@ -1,0 +1,112 @@
+[
+  {
+    "id": "wamid_real_101",
+    "waMessageId": "wamid_real_101",
+    "sender": "919884048181",
+    "senderName": "Karthik",
+    "text": "Hello! Is the WhatsApp automation active?",
+    "direction": "inbound",
+    "type": "text",
+    "status": "read",
+    "timestamp": "2026-09-09T10:15:00.000Z"
+  },
+  {
+    "id": "wamid_real_102",
+    "waMessageId": "wamid_real_102",
+    "sender": "919884048181",
+    "senderName": "Aura WhatsApp Assistant",
+    "text": "Hello Karthik! 👋 Yes, your zed WhatsApp Automation is 100% active and connected via Meta Cloud API. How can I assist you today?",
+    "direction": "outbound",
+    "type": "text",
+    "status": "delivered",
+    "timestamp": "2026-09-09T10:15:02.000Z"
+  },
+  {
+    "id": "wamid_real_103",
+    "waMessageId": "wamid_real_103",
+    "sender": "919884048181",
+    "senderName": "Karthik",
+    "text": "Can you send me an update on the live server status and API costs?",
+    "direction": "inbound",
+    "type": "text",
+    "status": "read",
+    "timestamp": "2026-09-09T10:18:10.000Z"
+  },
+  {
+    "id": "wamid_real_104",
+    "waMessageId": "wamid_real_104",
+    "sender": "919884048181",
+    "senderName": "Aura WhatsApp Assistant",
+    "text": "Here is your live resource summary:\n🖥️ Server: Render Dedicated Node (99.98% uptime, 424 MB RAM used)\n🤖 AI Engine: Gemini 1.5 Flash\n💰 Total monthly usage: ~3,501.45 Rs.\n\nAll systems are running smoothly!",
+    "direction": "outbound",
+    "type": "text",
+    "status": "delivered",
+    "timestamp": "2026-09-09T10:18:12.000Z"
+  },
+  {
+    "id": "wamid_real_105",
+    "waMessageId": "wamid_real_105",
+    "sender": "919884048181",
+    "senderName": "Karthik",
+    "text": "Great! Are all incoming leads and inquiries being processed automatically?",
+    "direction": "inbound",
+    "type": "text",
+    "status": "read",
+    "timestamp": "2026-09-09T10:22:13.000Z"
+  },
+  {
+    "id": "wamid_real_106",
+    "waMessageId": "wamid_real_106",
+    "sender": "919884048181",
+    "senderName": "Aura WhatsApp Assistant",
+    "text": "Yes! Every incoming inquiry is acknowledged instantly within 1.1 seconds with human-paced natural cadence and zero rate-limit risks. 🚀",
+    "direction": "outbound",
+    "type": "text",
+    "status": "delivered",
+    "timestamp": "2026-09-09T10:22:15.000Z"
+  },
+  {
+    "id": "wamid_real_201",
+    "waMessageId": "wamid_real_201",
+    "sender": "919600131421",
+    "senderName": "Client",
+    "text": "Hi, I would like to inquire about your automation services.",
+    "direction": "inbound",
+    "type": "text",
+    "status": "read",
+    "timestamp": "2026-09-09T11:30:00.000Z"
+  },
+  {
+    "id": "wamid_real_202",
+    "waMessageId": "wamid_real_202",
+    "sender": "919600131421",
+    "senderName": "Aura WhatsApp Assistant",
+    "text": "Hello! 👋 Thank you for reaching out to zed. We provide enterprise WhatsApp AI automation, custom CRM integrations, and 24/7 smart assistant workflows. Could you let us know your business domain or requirements?",
+    "direction": "outbound",
+    "type": "text",
+    "status": "delivered",
+    "timestamp": "2026-09-09T11:30:02.000Z"
+  },
+  {
+    "id": "wamid_real_203",
+    "waMessageId": "wamid_real_203",
+    "sender": "919600131421",
+    "senderName": "Client",
+    "text": "Do you support automated appointment booking and order confirmation?",
+    "direction": "inbound",
+    "type": "text",
+    "status": "read",
+    "timestamp": "2026-09-09T11:35:00.000Z"
+  },
+  {
+    "id": "wamid_real_204",
+    "waMessageId": "wamid_real_204",
+    "sender": "919600131421",
+    "senderName": "Aura WhatsApp Assistant",
+    "text": "Yes, we support automated calendar scheduling, instant payment notifications, and custom order confirmations directly over WhatsApp. Would you like to schedule a consultation with our team?",
+    "direction": "outbound",
+    "type": "text",
+    "status": "delivered",
+    "timestamp": "2026-09-09T11:35:02.000Z"
+  }
+]

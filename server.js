@@ -109,17 +109,17 @@ if (fs.existsSync(CONTACTS_FILE)) {
 if (!contacts.has('919884048181')) {
   contacts.set('919884048181', {
     phone: '919884048181',
-    name: 'Primary Recipient',
+    name: 'Karthik (+91 98840 48181)',
     lastActive: new Date().toISOString(),
-    lastMessage: ''
+    lastMessage: 'Yes! Every incoming inquiry is acknowledged instantly within 1.1 seconds with human-paced natural cadence and zero rate-limit risks. 🚀'
   });
 }
 if (!contacts.has('919600131421')) {
   contacts.set('919600131421', {
     phone: '919600131421',
-    name: 'Second Recipient',
+    name: 'Client (+91 96001 31421)',
     lastActive: new Date().toISOString(),
-    lastMessage: ''
+    lastMessage: 'Yes, we support automated calendar scheduling, instant payment notifications, and custom order confirmations directly over WhatsApp.'
   });
 }
 saveContactsToDisk();
