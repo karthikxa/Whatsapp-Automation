@@ -40,6 +40,207 @@
       setInterval(enforceZedBranding, 300);
       window.addEventListener('DOMContentLoaded', enforceZedBranding);
     </script>
+      <style id="zed-chat-style">
+/* ===================================================
+   ZED CHAT VIEWPORT & LAYOUT EXPANSION OPTIMIZATION
+   =================================================== */
+.chats-page {
+  box-sizing: border-box !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: calc(100vh - 1rem) !important;
+  max-height: 100vh !important;
+  padding: 0.75rem 1.25rem 1rem 1.25rem !important;
+  display: flex !important;
+  overflow: hidden !important;
+}
+
+.chats-page .page-header {
+  margin-bottom: 0.4rem !important;
+  flex-shrink: 0 !important;
+}
+
+.chats-page .page-header__title-group h1 {
+  font-size: 1.4rem !important;
+}
+
+.chats-page .page-header__subtitle {
+  margin: 0.15rem 0 0 !important;
+  font-size: 0.8125rem !important;
+}
+
+.chats-page .chats-layout {
+  background: var(--bg-white) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 12px !important;
+  flex: 1 1 0% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-top: 0.25rem !important;
+  display: flex !important;
+  overflow: hidden !important;
+}
+
+/* Sidebar sizing & streamlining */
+.chats-page .chats-sidebar {
+  border-right: 1px solid var(--border) !important;
+  background: var(--bg-white) !important;
+  flex-direction: column !important;
+  flex-shrink: 0 !important;
+  width: 350px !important;
+  min-width: 320px !important;
+  max-width: 380px !important;
+  height: 100% !important;
+  display: flex !important;
+}
+
+.chats-page .sidebar-header-box {
+  border-bottom: 1px solid var(--border) !important;
+  flex-direction: column !important;
+  gap: 0.4rem !important;
+  padding: 0.65rem 0.85rem !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+}
+
+.chats-page .session-select-group {
+  gap: 0.2rem !important;
+}
+
+.chats-page .session-select-group label {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  color: var(--text-muted) !important;
+}
+
+.chats-page .session-selector {
+  padding: 0.35rem 0.65rem !important;
+  font-size: 0.8125rem !important;
+  border-radius: 6px !important;
+  height: 2.1rem !important;
+}
+
+.chats-page .chats-tabs {
+  padding: 2px !important;
+  gap: 2px !important;
+  border-radius: 6px !important;
+}
+
+.chats-page .chats-tab {
+  padding: 4px 6px !important;
+  font-size: 0.76rem !important;
+  border-radius: 4px !important;
+}
+
+.chats-page .chat-search-input {
+  padding: 0.35rem 0.65rem !important;
+  border-radius: 6px !important;
+  height: 2.1rem !important;
+}
+
+.chats-page .chat-search-input input {
+  font-size: 0.8125rem !important;
+}
+
+.chats-page .chats-list {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+.chats-page .chat-item-card {
+  padding: 0.65rem 0.85rem !important;
+  gap: 0.65rem !important;
+}
+
+.chats-page .chat-avatar {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.chats-page .chat-item-name {
+  font-size: 0.875rem !important;
+}
+
+.chats-page .chat-item-snippet {
+  font-size: 0.78rem !important;
+  max-width: 210px !important;
+}
+
+/* Chat Room layout */
+.chats-page .chats-room {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chats-page .room-container {
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: 1 1 0% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chats-page .room-header {
+  height: 52px !important;
+  padding: 0 1.25rem !important;
+  flex-shrink: 0 !important;
+}
+
+.chats-page .room-avatar {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.chats-page .room-contact-info h3 {
+  font-size: 0.92rem !important;
+}
+
+.chats-page .room-contact-phone {
+  font-size: 0.76rem !important;
+}
+
+.chats-page .room-messages {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  padding: 1rem 1.25rem !important;
+  gap: 0.6rem !important;
+  overflow-y: auto !important;
+}
+
+.chats-page .message-bubble {
+  padding: 0.5rem 0.8rem 0.35rem !important;
+  font-size: 0.875rem !important;
+}
+
+.chats-page .room-input-footer {
+  padding: 0.55rem 1.25rem !important;
+  flex-shrink: 0 !important;
+  background: var(--bg-white) !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.chats-page .message-text-input {
+  padding: 0.55rem 1rem !important;
+  font-size: 0.875rem !important;
+  height: 2.4rem !important;
+}
+
+.chats-page .btn-send-message {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.chats-page .btn-input-accessory {
+  padding: 0.35rem !important;
+}
+</style>
   </head>
   <body>
     <div id="root"></div>
